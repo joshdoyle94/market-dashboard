@@ -2,13 +2,13 @@ import pandas as pd
 import math
 
 def calculate_daily_returns(df):
-    return df["Close"].pct_change()
+    return df["close"].pct_change()
 
 def calculate_moving_average(df, window):
-    return df["Close"].rolling(window=window).mean()
+    return df["close"].rolling(window=window).mean()
 
 def calculate_volatility(df, window):
-    daily_rts = df["Close"].pct_change()
+    daily_rts = df["close"].pct_change()
     
     rolling_std = daily_rts.rolling(window=window).std()
     
