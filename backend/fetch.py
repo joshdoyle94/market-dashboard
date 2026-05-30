@@ -1,20 +1,28 @@
 import yfinance as yf
-import sqlite3
+import psycopg2
 import logging
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
-connection = sqlite3.connect("market.db")  # creates the file if it doesn't exist
+# TO DO - move to config file later
+connection = psycopg2.connect(
+    dbname="market_dashboard",
+    user="joshdoyle",
+    password="",
+    host="localhost",
+    port="5432"
+)
+
 cursor = connection.cursor()               # the thing you use to run SQL
 
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS stock_data (
         ticker TEXT NOT NULL,
-        date TEXT,
-        open REAL,
-        close REAL,
-        high REAL,
-        low REAL,
-        volume REAL
+        date DATE,
+        open DOUBLE PRECISION,
+        close DOUBLE PRECISION,
+        high DOUBLE PRECISION,
+        low DOUBLE PRECISION,
+        volume DOUBLE PRECISION
     )
 """)
 
@@ -34,26 +42,33 @@ def fetch_prices(ticker, period):
             stock_data[x] = data
     return stock_data
 
-result = fetch_prices(ticker=ticker_list, period="5d")
+result = fetch_prices(ticker=ticker_list, period="1y")
 
 def store_prices(data):
-    connection = sqlite3.connect("market.db")
+    connection = psycopg2.connect(
+        dbname="market_dashboard",
+        user="joshdoyle",
+        password="",
+        host="localhost",
+        port="5432"
+    )
     cursor = connection.cursor()
 
     for ticker, df in data.items():
         for date, row in df.iterrows():
             cursor.execute("""
                 INSERT INTO stock_data (ticker, date, open, high, low, close, volume)
-                VALUES (:ticker, :date, :open, :high, :low, :close, :volume)
-            """, {
-                "ticker": ticker,
-                "date": str(date),
-                "open": row["Open"],
-                "high": row["High"],
-                "low": row["Low"],
-                "close": row["Close"],
-                "volume": row["Volume"]
-            })
+                VALUES (%(ticker)s, %(date)s, %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s)
+            """, 
+                {
+                    "ticker": ticker,
+                    "date": date.date(),
+                    "open": float(row["Open"]),
+                    "high": float(row["High"]),
+                    "low": float(row["Low"]),
+                    "close": float(row["Close"]),
+                    "volume": float(row["Volume"])
+                })
 
     connection.commit()
     connection.close()
