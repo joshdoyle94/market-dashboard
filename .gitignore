@@ -2,5 +2,3 @@ venv/
 node_modules/
 __pycache__/
 market.db
-frontend/.env
-backend/.env
