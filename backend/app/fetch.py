@@ -1,33 +1,33 @@
+from dotenv import load_dotenv
+import os
 import yfinance as yf
 import psycopg2
 import logging
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+load_dotenv()
 
-# TO DO - move to config file later
-connection = psycopg2.connect(
-    dbname="market_dashboard",
-    user="joshdoyle",
-    password="",
-    host="localhost",
-    port="5432"
-)
-
-cursor = connection.cursor()               # the thing you use to run SQL
-
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS stock_data (
-        ticker TEXT NOT NULL,
-        date DATE,
-        open DOUBLE PRECISION,
-        close DOUBLE PRECISION,
-        high DOUBLE PRECISION,
-        low DOUBLE PRECISION,
-        volume DOUBLE PRECISION
+def init_db():
+    connection = psycopg2.connect(
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD", ""),
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT")
     )
-""")
-
-connection.commit()
-connection.close()
+    cursor = connection.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS stock_data (
+            ticker TEXT NOT NULL,
+            date DATE,
+            open DOUBLE PRECISION,
+            close DOUBLE PRECISION,
+            high DOUBLE PRECISION,
+            low DOUBLE PRECISION,
+            volume DOUBLE PRECISION
+        )
+    """)
+    connection.commit()
+    connection.close()
 
 ticker_list = ["TSLA", "AAPL", "NVDA", "BIRDDDDD", "NFLX"]
 
@@ -42,15 +42,13 @@ def fetch_prices(ticker, period):
             stock_data[x] = data
     return stock_data
 
-result = fetch_prices(ticker=ticker_list, period="1y")
-
 def store_prices(data):
     connection = psycopg2.connect(
-        dbname="market_dashboard",
-        user="joshdoyle",
-        password="",
-        host="localhost",
-        port="5432"
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD", ""),
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT")
     )
     cursor = connection.cursor()
 
@@ -74,4 +72,7 @@ def store_prices(data):
     connection.close()
     print("Rows inserted successfully")
 
-store_prices(result)
+if __name__ == "__main__":
+    init_db()
+    result = fetch_prices(ticker_list, "1y")
+    store_prices(result)
