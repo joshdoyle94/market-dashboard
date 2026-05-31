@@ -13,7 +13,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://market-dashboard-sooty.vercel.app/"
+        "https://market-dashboard-sooty.vercel.app"
     ],
     allow_methods=["*"],
     allow_headers=["*"],
