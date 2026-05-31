@@ -4,9 +4,20 @@ from fastapi import FastAPI
 import pandas as pd
 from analytics import calculate_all
 import psycopg2
+from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "https://market-dashboard-sooty.vercel.app/"
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
