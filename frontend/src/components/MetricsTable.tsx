@@ -7,12 +7,14 @@ interface MetricsTableProps {
 
 export default function MetricsTable({ ticker }: MetricsTableProps) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['prices', ticker],
-    queryFn: () => fetchPrices(ticker)
-  })
+  queryKey: ['prices', ticker],
+  queryFn: () => fetchPrices(ticker),
+  enabled: !!ticker
+})
 
   if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Failed to load data</div>
+  if (!data) return <div></div>
 
   const latest20 = {
     moving_average: data['20'].moving_average.at(-1)?.toFixed(2),

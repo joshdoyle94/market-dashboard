@@ -23,7 +23,8 @@ def init_db():
             close DOUBLE PRECISION,
             high DOUBLE PRECISION,
             low DOUBLE PRECISION,
-            volume DOUBLE PRECISION
+            volume DOUBLE PRECISION,
+            CONSTRAINT prevent_duplicates UNIQUE (ticker, date)
         )
     """)
     connection.commit()
@@ -57,6 +58,7 @@ def store_prices(data):
             cursor.execute("""
                 INSERT INTO stock_data (ticker, date, open, high, low, close, volume)
                 VALUES (%(ticker)s, %(date)s, %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s)
+                ON CONFLICT (ticker, date) DO NOTHING
             """, 
                 {
                     "ticker": ticker,

@@ -8,12 +8,14 @@ interface PriceChartProps {
 
 export default function PriceChart({ ticker }: PriceChartProps) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['prices', ticker],
-    queryFn: () => fetchPrices(ticker)
-  })
+  queryKey: ['prices', ticker],
+  queryFn: () => fetchPrices(ticker),
+  enabled: !!ticker
+})
 
   if (isLoading) return <div>Loading...</div>
   if (isError) return <div>Failed to load data</div>
+  if (!data) return <div>Search for a ticker to begin</div>
 
   const chartData = data['20'].moving_average.map((value: number, index: number) => ({
     index,
